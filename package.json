@@ -1,0 +1,23 @@
+{
+  "name": "node-js",
+  "version": "1.0.0",
+  "description": "learning node js",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-modules index.js"
+  },
+  "keywords": [
+    "node",
+    "learning"
+  ],
+  "author": "abdul",
+  "license": "ISC",
+  "dependencies": {
+    "@solana/spl-token": "^0.4.3",
+    "@solana/web3.js": "^1.91.3",
+    "axios": "^0.24.0",
+    "crypto": "^1.0.1",
+    "express": "^4.19.2"
+  }
+}
