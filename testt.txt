@@ -1,0 +1,48 @@
+import requests
+import json
+import time
+import hashlib
+import hmac
+
+# API endpoint for fetching order book
+url = "https://api.bybit.com/v2/public/orderBook/L2"
+
+# API key and secret key
+api_key = "zZipPR1t8GwFoJe2sE"
+api_secret = "MNTlSRdd4lXZarJjHsZD6wFiFh2Iw1iBwP5M"
+
+# Additional parameters
+symbol = "SOLUSDT"  # Solana/USDT trading pair
+limit = 10  # Number of order book levels to retrieve
+
+# Construct request parameters
+params = {
+    "symbol": symbol,
+    "limit": limit
+}
+
+# Generate timestamp
+timestamp = int(time.time() * 1000)
+
+# Construct signature
+sign_str = f"GET/realtime{timestamp}"
+signature = hmac.new(api_secret.encode(), sign_str.encode(), hashlib.sha256).hexdigest()
+
+# Include API key, timestamp, and signature in request headers
+headers = {
+    "api_key": api_key,
+    "timestamp": str(timestamp),
+    "sign": signature
+}
+
+# Make API request
+response = requests.get(url, params=params, headers=headers)
+
+# Handle response
+if response.status_code == 200:
+    data = response.json()
+    # Process order book data
+    print(json.dumps(data, indent=4))
+else:
+    print("Error:", response.status_code)
+    print(response.text)
