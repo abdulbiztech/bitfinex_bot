@@ -46,3 +46,170 @@ if response.status_code == 200:
 else:
     print("Error:", response.status_code)
     print(response.text)
+
+
+
+///////////////////////////////!SECTION
+import { bitfinex } from "ccxt";
+import readline from "readline";
+
+const apiKey = "a3dbbaadadfcb79f752c14707eb29df14820f44aea2";
+const secret = "c458ccac69a5850046cab96d94357e4bd0c2c91da38";
+
+async function automateTrading() {
+  const exchange = new bitfinex({ apiKey, secret });
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  try {
+    // Obtain current market price of SOL/USD
+    const marketPrice = await getMarketPrice(exchange, "SOL/USD");
+    console.log(`Current Market Price (SOL/USD): ${marketPrice} USD`);
+
+    rl.question("Enter Buy Price (USD): ", async (buyPriceInput) => {
+      const buyPrice = parseFloat(buyPriceInput);
+
+      rl.question("Enter Sell Price (USD): ", async (sellPriceInput) => {
+        const sellPrice = parseFloat(sellPriceInput);
+
+        while (true) {
+          const currentMarketPrice = await getMarketPrice(exchange, "SOL/USD");
+          console.log(
+            `Current Market Price (SOL/USD): ${currentMarketPrice} USD`
+          );
+
+          if (currentMarketPrice < buyPrice) {
+            const buyAmount = Math.floor(1000 / currentMarketPrice); // Buy as much as possible with available USD
+            await executeOrder(
+              exchange,
+              "buy",
+              "SOL/USD",
+              buyAmount,
+              currentMarketPrice
+            );
+            console.log(
+              `Executed Buy Order: Bought ${buyAmount} SOL at ${currentMarketPrice} USD`
+            );
+          }
+
+          if (currentMarketPrice > sellPrice) {
+            const sellAmount = Math.floor(1000 / currentMarketPrice); // Sell all SOL holdings
+            await executeOrder(
+              exchange,
+              "sell",
+              "SOL/USD",
+              sellAmount,
+              currentMarketPrice
+            );
+            console.log(
+              `Executed Sell Order: Sold ${sellAmount} SOL at ${currentMarketPrice} USD`
+            );
+            break; // Exit loop after successful sell order
+          }
+
+          // Pause for 5 seconds before checking market conditions again
+          await sleep(5000);
+        }
+
+        rl.close(); // Close readline interface
+      });
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    rl.close(); // Close readline interface in case of error
+  }
+}
+
+async function getMarketPrice(exchange, symbol) {
+  const ticker = await exchange.fetchTicker(symbol);
+  return ticker.last;
+}
+
+async function executeOrder(exchange, side, symbol, amount, price) {
+  // Execute a market order (buy or sell) on the exchange
+  const order = await exchange.createOrder(
+    symbol,
+    "market",
+    side,
+    amount,
+    price
+  );
+  return order;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Execute automated trading function
+automateTrading();
+
+///////////////kraken
+
+import ccxt from 'ccxt';
+
+async function simulateTrading() {
+  const exchange = new ccxt.kraken({
+    apiKey: 'YOUR_KRAKEN_API_KEY',
+    secret: 'YOUR_KRAKEN_API_SECRET',
+    // Add any additional options here (e.g., enableRateLimit: true)
+  });
+
+  try {
+    // Simulate trading with virtual funds
+    let virtualUSDBalance = 1000; // Initial virtual USD balance
+    let virtualSOLBalance = 0; // Initial virtual SOL balance
+
+    // Specify target buy and sell prices
+    const buyPrice = 152.7; // Custom buy price threshold
+    const sellPrice = 166; // Custom sell price threshold
+
+    // Simulate buying SOL if market price is below the buy price threshold
+    const marketPrice = await getMarketPrice(exchange, 'SOL/USD');
+
+    if (marketPrice < buyPrice && virtualUSDBalance > marketPrice) {
+      const buyAmount = Math.floor(virtualUSDBalance / marketPrice); // Buy as much as possible with available USD
+      const buyCost = buyAmount * marketPrice;
+
+      // Update virtual balances
+      virtualUSDBalance -= buyCost;
+      virtualSOLBalance += buyAmount;
+
+      console.log(
+        `Simulated Buy Order: Bought ${buyAmount} SOL at ${marketPrice} USD`
+      );
+      console.log(
+        `Updated Virtual Balances - USD: ${virtualUSDBalance}, SOL: ${virtualSOLBalance}`
+      );
+    } else if (marketPrice >= sellPrice && virtualSOLBalance > 0) {
+      // Simulate selling all SOL if market price exceeds the sell price threshold
+      const sellAmount = virtualSOLBalance;
+      const sellRevenue = sellAmount * marketPrice;
+
+      // Update virtual balances
+      virtualUSDBalance += sellRevenue;
+      virtualSOLBalance = 0;
+
+      console.log(
+        `Simulated Sell Order: Sold ${sellAmount} SOL at ${marketPrice} USD`
+      );
+      console.log(
+        `Updated Virtual Balances - USD: ${virtualUSDBalance}, SOL: ${virtualSOLBalance}`
+      );
+    } else {
+      console.log('No action taken based on current market conditions.');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+async function getMarketPrice(exchange, symbol) {
+  const ticker = await exchange.fetchTicker(symbol);
+  return ticker.last;
+}
+
+// Execute simulated trading function
+simulateTrading();

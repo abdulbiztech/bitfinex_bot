@@ -17,6 +17,8 @@
     "@solana/spl-token": "^0.4.3",
     "@solana/web3.js": "^1.91.3",
     "axios": "^0.24.0",
+    "bybit-api": "^3.9.8",
+    "ccxt": "^4.2.95",
     "crypto": "^1.0.1",
     "express": "^4.19.2"
   }
